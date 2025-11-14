@@ -217,9 +217,6 @@ Three samples are generated using τ = 0.7, 1.0, 1.2.
 ✔ Loss curves
 ✔ Temperature-based text generation
 
-Nice, I’ll keep them short like the last one 👇
-
----
 
 ## 2 Question – Mini Transformer Encoder for Sentences
 
