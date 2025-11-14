@@ -155,5 +155,161 @@ During inference, the model must generate text **one token at a time**:
 
 This iterative process allows the model to produce entire sentences or sequences during generation.
 
+## Part-2 Programming
 
+# 1 Question – Character-Level RNN Language Model 
+
+### **1. Overview**
+
+This script trains a **character-level language model** using an RNN (GRU).
+It learns to predict the **next character** in a sequence and then generates text using temperature-based sampling.
+
+### **2. Data Preparation**
+
+* Uses either a **toy corpus** (randomly repeated short words) or an external text file.
+* Builds a **character vocabulary** and converts the text into integer indices.
+* Creates `(input, target)` pairs where `y` is the next character for each position.
+* Splits data 90% train / 10% validation.
+
+### **3. Model**
+
+**Architecture:**
+Embedding → GRU (or RNN/LSTM) → Linear → Softmax
+
+* `Embedding`: converts character IDs to vectors
+* `GRU`: processes sequences and learns character patterns
+* `Linear`: predicts probability of each next character
+
+`init_hidden()` initializes the hidden state for sampling.
+
+### **4. Training**
+
+* Uses **teacher forcing**: the true previous characters are fed during training.
+* Loss: **CrossEntropyLoss**
+* Optimizer: **Adam**
+* **Gradient clipping** prevents exploding gradients.
+* After each epoch, train/validation loss + perplexity are printed.
+  
+### **5. Loss Curves**
+
+Matplotlib plots **training vs validation loss** to show convergence and detect overfitting.
+
+### **6. Text Generation**
+
+`sample()`:
+
+1. Takes a start string
+2. Warms up the model with the prefix
+3. Repeatedly predicts the next character
+4. Applies **temperature scaling**:
+
+   * Low temperature → predictable
+   * High temperature → creative/noisy
+
+Three samples are generated using τ = 0.7, 1.0, 1.2.
+
+### **7. Requirements Covered**
+
+✔ Character-level model
+✔ Embedding → RNN → Linear → Softmax
+✔ Teacher forcing training
+✔ Cross-entropy + Adam
+✔ Loss curves
+✔ Temperature-based text generation
+
+Nice, I’ll keep them short like the last one 👇
+
+---
+
+## 2 Question – Mini Transformer Encoder for Sentences
+
+### **1. Overview**
+
+This script builds a **mini Transformer encoder** that processes a small batch of sentences and produces **contextual word embeddings** plus an **attention heatmap**.
+
+### **2. Data & Tokenization**
+
+* Uses ~10 toy sentences like `"the cat sat on the mat"`.
+* Lowercases and splits by spaces to get tokens.
+* Builds a **word-level vocabulary** (plus `<PAD>`).
+* Converts sentences to padded index sequences of equal length.
+
+### **3. Model Components**
+
+**Pipeline:**
+Embedding → Sinusoidal Positional Encoding → Multi-Head Self-Attention → Feed-Forward → Add & Norm
+
+* **Embedding**: maps word IDs to vectors of size `d_model`.
+* **Positional encoding**: adds sinusoidal position information to embeddings.
+* **Multi-head self-attention**: computes attention between all words in the sentence across multiple heads.
+* **Feed-forward layer**: position-wise MLP applied to each token.
+* **Add & Norm**: residual connections + LayerNorm for stability.
+
+All of this is wrapped in a simple `MiniTransformerEncoder`.
+
+### **4. Outputs**
+
+The script prints:
+
+* Input sentence and its tokens.
+* **Final contextual embeddings** for each token in the first sentence (vector per word).
+* An **attention heatmap** (word-to-word) for one head using `matplotlib`, showing which words attend to which others.
+
+### **5. Requirements Covered**
+
+✔ Small sentence dataset
+✔ Tokenization + embedding
+✔ Sinusoidal positional encoding
+✔ Self-attention + multi-head attention
+✔ Feed-forward + Add & Norm
+✔ Input tokens, contextual embeddings, attention heatmap shown
+
+ 
+## 3 Question – Scaled Dot-Product Attention
+
+### **1. Overview**
+
+This script implements **scaled dot-product attention** and tests it using random Q, K, V tensors.
+It also compares **softmax before and after scaling by √dₖ** to demonstrate stability.
+
+### **2. Attention Function**
+
+Implements:
+
+• Attention(Q, K, V) = softmax( (Q · Kᵀ) / √dₖ ) V 
+
+* `Q`: queries, shape `(batch, seq_len_q, d_k)`
+* `K`: keys, shape `(batch, seq_len_k, d_k)`
+* `V`: values, shape `(batch, seq_len_k, d_v)`
+
+Returns:
+
+* `output`: attended values
+* `attn_weights`: attention weight matrix
+* `scores`: scaled logits before softmax
+
+### **3. Testing with Random Tensors**
+
+* Creates small random Q, K, V tensors (e.g., batch size 1, few timesteps, small dₖ).
+* Computes:
+
+  * **Raw scores**: `QK^T`
+  * **Scaled scores**: `QK^T / sqrt(d_k)`
+  * Softmax over both.
+
+### **4. Printed Results**
+
+The script prints:
+
+* Raw vs scaled scores for one query position.
+* Softmax over raw vs scaled scores (shows how scaling stabilizes softmax).
+* The **attention weight matrix** (for all queries vs keys).
+* The **output vectors** after applying attention.
+
+### **5. Requirements Covered**
+
+✔ Correct attention formula implementation
+✔ Random Q, K, V test inputs
+✔ Printed attention weights and outputs
+✔ Softmax stability check (before vs after scaling by √dₖ)
 
