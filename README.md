@@ -81,8 +81,6 @@ LSTMs separate internal memory storage from what the network outputs:
 
 # 4 Question
 
-# **Self-Attention — Explanation for README**
-
 ### **a) What are Query (Q), Key (K), and Value (V)?**
 
 In self-attention, each token in a sequence is transformed into three different vectors:
@@ -109,3 +107,53 @@ This formula captures how strongly each query interacts with all keys, normalize
 ### **c) Why divide by √dₖ?**
 
 As the dimensionality ( d_k ) increases, the raw dot products ( Q \cdot K ) naturally grow larger in magnitude. Large logits can push the softmax function into extremely peaked outputs or even numerical instability, where gradients become very small. Dividing by ( \sqrt{d_k} ) **normalizes the scale** of the dot product, keeping the logits in a stable range so softmax produces smoother probabilities and the model trains more effectively.
+
+# 5 Question
+
+### **a) Why Transformers use multi-head attention**
+
+Transformers use multiple attention heads because each head can focus on **different types of relationships** within the sequence. By projecting the queries, keys, and values into different learned subspaces, each head can capture unique patterns—such as positional relationships, syntactic structure, or semantic meaning. This parallel attention mechanism allows the model to build a much richer and more expressive representation than what a single attention head could learn on its own.
+
+### **b) Purpose of Add & Norm (Residual + LayerNorm)**
+
+The Add & Norm block combines two important ideas that stabilize and strengthen training:
+
+* **Residual connections:**
+  These connections add the input of a layer back to its output, creating a shortcut path for gradients. This helps prevent vanishing gradients and enables the network to train effectively even at great depth.
+
+* **Layer Normalization:**
+  After the residual addition, LayerNorm normalizes the activations to maintain consistent scaling. This improves training stability, helps the model converge faster, and reduces sensitivity to initialization and learning rate.
+
+Together, Add & Norm ensures smoother optimization and stronger gradient flow through the model.
+
+### **c) Example of linguistic relations that different heads may capture**
+
+Different attention heads often learn to specialize in distinct linguistic patterns. For example, one head may track **subject–verb agreement**, ensuring that phrases like “dogs run” and “dog runs” remain grammatically coherent. Another head might learn **coreference patterns**, linking a name such as “John” to pronouns like “he” within the same sentence.
+
+# 6 Question
+
+### **a) Why the decoder uses masked self-attention**
+
+In the decoder, masked self-attention is used to **block access to future tokens** during training. This ensures that the model cannot “peek ahead” at words that it is supposed to predict. Without masking, the decoder could cheat by using future information, leading to **information leakage**. Masking enforces strict left-to-right generation so the model learns to predict each token only from previously generated tokens.
+
+### **b) Difference between encoder self-attention and encoder–decoder cross-attention**
+
+* **Encoder self-attention:**
+  Each token in the input sequence attends to **all other tokens in the same sequence**, enabling the encoder to build rich contextual representations of the entire input sentence.
+
+* **Encoder–decoder cross-attention:**
+  During decoding, the decoder's query vectors attend to the **outputs of the encoder**. This allows the decoder to incorporate information from the encoded source sentence while generating output tokens, linking the input and output sequences together.
+
+### **c) How the model generates tokens step-by-step during inference (no teacher forcing)**
+
+During inference, the model must generate text **one token at a time**:
+
+1. The decoder is first given a special start-of-sentence token (`<sos>`) to begin generation.
+2. The decoder predicts the next token, and that predicted token is fed back as the next input.
+3. Masked self-attention ensures it only uses previously generated tokens.
+4. This loop continues — each predicted token becomes the next input — until the model outputs an end-of-sequence token (`<eos>`).
+
+This iterative process allows the model to produce entire sentences or sequences during generation.
+
+
+
